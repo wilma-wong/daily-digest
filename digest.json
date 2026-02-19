@@ -1,0 +1,67 @@
+{
+  "date": "2026-02-19",
+  "ai_summary": "Today's key developments: **AI regulation** continues to dominate headlines as the EU finalises enforcement timelines. In **tech**, Apple quietly updated its developer tooling and GitHub shipped a major Copilot overhaul. Your tracked RSS feeds surfaced two high-signal long-reads on distributed systems worth bookmarking. On **X**, the accounts you follow are discussing the latest OpenAI drama and a viral thread on productivity systems.",
+  "sections": [
+    {
+      "id": "news",
+      "title": "News & Keywords",
+      "icon": "◈",
+      "articles": [
+        {
+          "title": "EU regulators finalise AI Act enforcement timeline for foundation models",
+          "source": "Reuters",
+          "url": "https://reuters.com",
+          "time": "2h ago",
+          "summary": "European regulators confirmed that providers of general-purpose AI models must comply with transparency obligations by August 2026.",
+          "is_new": true
+        },
+        {
+          "title": "Apple ships new Xcode AI assistant integrated with on-device models",
+          "source": "9to5Mac",
+          "url": "https://9to5mac.com",
+          "time": "4h ago",
+          "summary": "The update brings context-aware code completion powered entirely by on-device ML, requiring no internet connection.",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "id": "rss",
+      "title": "RSS Feeds",
+      "icon": "◎",
+      "articles": [
+        {
+          "title": "The hidden cost of distributed transactions — a deep dive",
+          "source": "martinfowler.com",
+          "url": "https://martinfowler.com",
+          "time": "6h ago",
+          "summary": "Martin Fowler's team revisits two-phase commit trade-offs and proposes a saga-based alternative for modern microservices.",
+          "is_new": false
+        },
+        {
+          "title": "How I read 100 papers a year without burning out",
+          "source": "eugeneyan.com",
+          "url": "https://eugeneyan.com",
+          "time": "9h ago",
+          "summary": "A practical system using progressive summarisation and spaced repetition to stay on top of ML research.",
+          "is_new": false
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "title": "Social / X",
+      "icon": "◇",
+      "articles": [
+        {
+          "title": "@karpathy — Thread: Why I think test-time compute scaling is the most underrated trend in AI right now",
+          "source": "X / Nitter",
+          "url": "https://nitter.net",
+          "time": "3h ago",
+          "summary": "Karpathy argues that inference-time scaling will matter more than parameter count in 2026 and beyond.",
+          "is_new": true
+        }
+      ]
+    }
+  ]
+}

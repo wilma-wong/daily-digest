@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Digest</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --border2: #2e2e2e;
+    --accent: #c8a96e;
+    --accent2: #7eb8c8;
+    --text: #e8e4dc;
+    --muted: #666;
+    --success: #4caf84;
+    --danger: #c86e6e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 22px 48px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.94);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    animation: slideDown 0.5s ease;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .header-date { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 8px var(--success);
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  .btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 16px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 7px;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.07); }
+  .btn.primary:hover { background: rgba(200,169,110,0.15); }
+
+  /* Settings overlay */
+  .settings-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+
+  .settings-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .settings-panel {
+    width: 480px; height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border2);
+    display: flex; flex-direction: column;
+    animation: slideLeft 0.25s ease;
+    overflow: hidden;
+  }
+
+  @keyframes slideLeft {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .settings-header {
+    padding: 26px 32px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .settings-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; }
+
+  .settings-body {
+    flex: 1; overflow-y: auto;
+    padding: 28px 32px;
+    display: flex; flex-direction: column; gap: 30px;
+  }
+
+  .settings-body::-webkit-scrollbar { width: 4px; }
+  .settings-body::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .settings-footer {
+    padding: 18px 32px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 10px; flex-shrink: 0;
+  }
+
+  .setting-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .setting-group-label {
+    font-size: 10px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .setting-group-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .setting-group-desc { font-size: 11px; color: var(--muted); margin-top: -4px; }
+
+  .tag-list {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    min-height: 32px;
+  }
+
+  .tag-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 8px 5px 12px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    font-size: 12px; color: var(--text);
+    animation: popIn 0.15s ease;
+  }
+
+  @keyframes popIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .tag-remove {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 0 2px;
+    transition: color 0.15s;
+  }
+
+  .tag-remove:hover { color: var(--danger); }
+
+  .input-row { display: flex; gap: 8px; }
+
+  .text-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .text-input:focus { border-color: var(--accent2); }
+  .text-input::placeholder { color: var(--muted); }
+
+  .save-status {
+    font-size: 11px; padding: 10px 14px;
+    border: 1px solid transparent;
+    opacity: 0; transition: opacity 0.3s;
+    letter-spacing: 0.5px;
+  }
+
+  .save-status.show { opacity: 1; }
+  .save-status.ok { border-color: var(--success); color: var(--success); background: rgba(76,175,132,0.07); }
+  .save-status.err { border-color: var(--danger); color: var(--danger); background: rgba(200,110,110,0.07); }
+
+  /* Main */
+  .app { max-width: 1160px; margin: 0 auto; padding: 40px 48px; display: flex; flex-direction: column; gap: 36px; }
+
+  .digest-banner {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 30px 36px;
+    position: relative; overflow: hidden;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .digest-banner::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+  }
+
+  .digest-label {
+    font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .digest-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .digest-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; line-height: 1.85;
+  }
+
+  .digest-text em { color: var(--accent); font-style: italic; }
+
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; animation: fadeUp 0.5s ease 0.05s both; }
+
+  .filter-chip {
+    padding: 7px 15px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.18s; letter-spacing: 0.5px;
+  }
+
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
+  .filter-chip:hover:not(.active) { border-color: var(--accent2); color: var(--accent2); }
+
+  .section { animation: fadeUp 0.6s ease both; }
+
+  @keyframes fadeUp { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+
+  .section-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; }
+  .section-count { font-size: 10px; color: var(--muted); margin-left: auto; letter-spacing: 1px; }
+
+  .articles-grid { display: grid; gap: 1px; background: var(--border); }
+
+  .article-card {
+    background: var(--surface);
+    padding: 18px 22px;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 14px; align-items: start;
+    cursor: pointer; transition: background 0.18s;
+    text-decoration: none; color: inherit;
+  }
+
+  .article-card:hover { background: var(--surface2); }
+  .article-card:hover .article-title { color: var(--accent); }
+
+  .article-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; line-height: 1.45;
+    transition: color 0.18s; margin-bottom: 5px;
+  }
+
+  .article-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .article-source { color: var(--accent2); font-weight: 500; }
+
+  .article-summary { font-size: 12px; color: #777; margin-top: 7px; line-height: 1.6; max-width: 640px; }
+
+  .article-arrow { color: var(--muted); font-size: 15px; margin-top: 2px; transition: transform 0.18s, color 0.18s; }
+  .article-card:hover .article-arrow { transform: translateX(4px); color: var(--accent); }
+
+  .badge {
+    display: inline-block; font-size: 10px;
+    padding: 1px 7px; border: 1px solid var(--border2);
+    color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .badge.new { border-color: var(--accent); color: var(--accent); }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    border-radius: 2px; height: 1em; margin-bottom: 10px;
+  }
+
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted); border: 1px dashed var(--border);
+  }
+
+  .empty-state .big { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 10px; color: var(--border2); }
+  .empty-state a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+  .toast {
+    position: fixed; bottom: 32px; right: 48px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    padding: 13px 20px; font-size: 12px; color: var(--text);
+    display: flex; align-items: center; gap: 12px;
+    z-index: 300; opacity: 0; transform: translateY(10px);
+    transition: all 0.25s ease; pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 48px;
+    display: flex; justify-content: space-between;
+    color: var(--muted); font-size: 11px; letter-spacing: 1px;
+  }
+
+  @media(max-width:700px) {
+    header,.app,footer { padding: 20px; }
+    .settings-panel { width: 100vw; }
+    .article-card { grid-template-columns: 1fr; }
+    .article-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">◈ Daily Digest</div>
+  <span class="header-date" id="header-date"></span>
+  <div class="header-actions">
+    <div class="status-dot" id="status-dot"></div>
+    <button class="btn" onclick="loadDigest()">↻ Refresh</button>
+    <button class="btn primary" onclick="openSettings()">⚙ Settings</button>
+  </div>
+</header>
+
+<!-- Settings Slide-in Panel -->
+<div class="settings-overlay" id="settings-overlay" onclick="overlayClick(event)">
+  <div class="settings-panel">
+
+    <div class="settings-header">
+      <div class="settings-title">⚙ Configure Sources</div>
+      <button class="btn" style="margin-left:auto" onclick="closeSettings()">✕ Close</button>
+    </div>
+
+    <div class="settings-body">
+
+      <div class="setting-group">
+        <div class="setting-group-label">n8n Webhook URL</div>
+        <div class="setting-group-desc">Copy this from your n8n Webhook node. Saving will call this URL to trigger an instant fetch.</div>
+        <input class="text-input" id="webhook-url" type="text" placeholder="https://your-instance.app.n8n.cloud/webhook/abc123" />
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-label">GitHub Data URL</div>
+        <div class="setting-group-desc">Raw URL of your digest.json file on GitHub — the page reads from here.</div>
+        <input class="text-input" id="data-url" type="text" placeholder="https://raw.githubusercontent.com/you/daily-digest/main/digest.json" />
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-label">✦ Keywords / Topics</div>
+        <div class="setting-group-desc">Topics to search in the news — e.g. "AI", "climate change", "fintech".</div>
+        <div class="tag-list" id="keywords-list"></div>
+        <div class="input-row">
+          <input class="text-input" id="keyword-input" type="text" placeholder='e.g. "machine learning"' onkeydown="if(event.key==='Enter')addTag('keywords','keyword-input')" />
+          <button class="btn primary" onclick="addTag('keywords','keyword-input')">+ Add</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-label">◎ RSS Feeds</div>
+        <div class="setting-group-desc">Paste the RSS/Atom URL of any blog, newsletter, or publication.</div>
+        <div class="tag-list" id="rss-list"></div>
+        <div class="input-row">
+          <input class="text-input" id="rss-input" type="text" placeholder="https://example.com/feed.xml" onkeydown="if(event.key==='Enter')addTag('rss','rss-input')" />
+          <button class="btn primary" onclick="addTag('rss','rss-input')">+ Add</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-label">◇ X Accounts</div>
+        <div class="setting-group-desc">X (Twitter) usernames to track via Nitter RSS — no @ needed.</div>
+        <div class="tag-list" id="x-list"></div>
+        <div class="input-row">
+          <input class="text-input" id="x-input" type="text" placeholder="e.g. karpathy" onkeydown="if(event.key==='Enter')addTag('x','x-input')" />
+          <button class="btn primary" onclick="addTag('x','x-input')">+ Add</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-label">⬡ Websites</div>
+        <div class="setting-group-desc">Specific pages for n8n to scrape headlines from.</div>
+        <div class="tag-list" id="sites-list"></div>
+        <div class="input-row">
+          <input class="text-input" id="sites-input" type="text" placeholder="https://hnrss.org/frontpage" onkeydown="if(event.key==='Enter')addTag('sites','sites-input')" />
+          <button class="btn primary" onclick="addTag('sites','sites-input')">+ Add</button>
+        </div>
+      </div>
+
+
+      <div class="setting-group">
+        <div class="setting-group-label">❖ Categories</div>
+        <div class="setting-group-desc">Your base categories — AI will assign every article to one of these, or create a new one if none fit. Drag to reorder priority.</div>
+        <div class="tag-list" id="categories-list"></div>
+        <div class="input-row">
+          <input class="text-input" id="categories-input" type="text" placeholder='e.g. "AI & Machine Learning"' onkeydown="if(event.key==='Enter')addTag('categories','categories-input')" />
+          <button class="btn primary" onclick="addTag('categories','categories-input')">+ Add</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:-2px">💡 Tip: if an article doesn't match any category, AI will invent a label for it automatically.</div>
+      </div>
+
+      <div class="save-status" id="save-status"></div>
+
+    </div>
+
+    <div class="settings-footer">
+      <button class="btn primary" style="flex:1;justify-content:center" onclick="saveSettings()">✓ Save &amp; Trigger Fetch</button>
+      <button class="btn" onclick="closeSettings()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">
+  <div class="spinner"></div>
+  <span id="toast-msg">Triggering n8n…</span>
+</div>
+
+<div class="app">
+
+  <div class="digest-banner">
+    <div class="digest-label">✦ AI Summary</div>
+    <div class="digest-text" id="ai-summary">
+      <div class="skeleton" style="width:88%"></div>
+      <div class="skeleton" style="width:72%"></div>
+      <div class="skeleton" style="width:80%"></div>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    <div class="filter-chip active" data-filter="all" onclick="filterSection('all',this)">◈ All</div>
+  </div>
+
+  <div id="sections-container">
+    <div class="empty-state">
+      <div class="big">◌</div>
+      <div>No digest yet. <a onclick="openSettings()">Open Settings</a> to add your topics, then save to trigger your first fetch.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>◈ Daily Digest</span>
+  <span>last updated: <span id="last-updated">—</span></span>
+</footer>
+
+<script>
+// ── State ──────────────────────────────────────────
+let settings = {
+  webhookUrl: '',
+  dataUrl: '',
+  keywords: [],
+  rss: [],
+  x: [],
+  sites: [],
+  categories: []
+};
+
+// ── Persist in localStorage ────────────────────────
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('digest-settings');
+    if (saved) settings = { ...settings, ...JSON.parse(saved) };
+  } catch(e) {}
+  document.getElementById('webhook-url').value = settings.webhookUrl || '';
+  document.getElementById('data-url').value = settings.dataUrl || '';
+  ['keywords','rss','x','sites','categories'].forEach(renderTagList);
+}
+
+function persistSettings() {
+  localStorage.setItem('digest-settings', JSON.stringify(settings));
+}
+
+// ── Tags ───────────────────────────────────────────
+function renderTagList(key) {
+  const el = document.getElementById(key + '-list');
+  el.innerHTML = '';
+  (settings[key] || []).forEach((val, i) => {
+    const d = document.createElement('div');
+    d.className = 'tag-item';
+    d.innerHTML = `<span>${val}</span><button class="tag-remove" onclick="removeTag('${key}',${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+
+function addTag(key, inputId) {
+  const input = document.getElementById(inputId);
+  let val = input.value.trim();
+  if (!val) return;
+  if (key === 'x') val = val.replace(/^@/, '');
+  if (!settings[key].includes(val)) { settings[key].push(val); renderTagList(key); }
+  input.value = '';
+  input.focus();
+}
+
+function removeTag(key, i) {
+  settings[key].splice(i, 1);
+  renderTagList(key);
+}
+
+// ── Panel open/close ───────────────────────────────
+function openSettings() { document.getElementById('settings-overlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); hideSaveStatus(); }
+function overlayClick(e) { if (e.target.id === 'settings-overlay') closeSettings(); }
+
+// ── Save & webhook ─────────────────────────────────
+async function saveSettings() {
+  settings.webhookUrl = document.getElementById('webhook-url').value.trim();
+  settings.dataUrl    = document.getElementById('data-url').value.trim();
+
+  if (!settings.webhookUrl) {
+    showSaveStatus('err', '⚠ Enter your n8n webhook URL first.'); return;
+  }
+  const hasContent = ['keywords','rss','x','sites'].some(k => settings[k].length > 0);
+  if (!hasContent) {
+    showSaveStatus('err', '⚠ Add at least one keyword, RSS feed, X account, or website.'); return;
+  }
+
+  persistSettings();
+  showToast('Sending settings to n8n…');
+
+  const payload = {
+    keywords:     settings.keywords,
+    rss_feeds:    settings.rss,
+    x_accounts:   settings.x,
+    websites:     settings.sites,
+    categories:   settings.categories,
+    triggered_at: new Date().toISOString()
+  };
+
+  try {
+    await fetch(settings.webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'no-cors'
+    });
+    showSaveStatus('ok', '✓ Saved! n8n is fetching — page will refresh in 30s.');
+    showToast('✓ Triggered! Refreshing in 30s…');
+    setTimeout(() => { hideToast(); loadDigest(); }, 30000);
+  } catch(e) {
+    showSaveStatus('err', '⚠ Could not reach webhook — check the URL.');
+    hideToast();
+  }
+}
+
+function showSaveStatus(type, msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.className = 'save-status show ' + type;
+}
+
+function hideSaveStatus() {
+  document.getElementById('save-status').className = 'save-status';
+}
+
+// ── Toast ──────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast').classList.add('show');
+}
+
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+// ── Digest loading ─────────────────────────────────
+const SAMPLE = {
+  date: new Date().toISOString().split('T')[0],
+  ai_summary: "Welcome to your **Daily Digest**. Open ⚙ Settings to add your keywords, RSS feeds, and X accounts — then hit **Save & Trigger Fetch** to pull your first real digest. Once n8n is connected, this summary will be written by AI every morning.",
+  sections: [{
+    id: 'demo', title: 'Getting Started', icon: '◌',
+    articles: [{
+      title: 'Open Settings to configure your sources',
+      source: 'Daily Digest', url: '#', time: 'now',
+      summary: 'Add keywords, RSS feeds, X accounts, or websites. Hit Save — n8n will fetch everything and write the JSON to GitHub. This page will update automatically.',
+      is_new: false
+    }]
+  }]
+};
+
+async function loadDigest() {
+  setDot('loading');
+  let data;
+  if (settings.dataUrl) {
+    try {
+      const res = await fetch(settings.dataUrl + '?t=' + Date.now());
+      if (!res.ok) throw new Error();
+      data = await res.json();
+    } catch(e) { data = SAMPLE; }
+  } else {
+    data = SAMPLE;
+  }
+  renderDigest(data);
+  setDot('ok');
+}
+
+function renderDigest(data) {
+  const d = new Date(data.date || Date.now());
+  document.getElementById('header-date').textContent =
+    d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('last-updated').textContent =
+    d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  document.getElementById('ai-summary').innerHTML = (data.ai_summary || 'No summary yet.')
+    .replace(/\*\*(.*?)\*\*/g,'<em>$1</em>');
+
+  // Filters
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = `<div class="filter-chip active" data-filter="all" onclick="filterSection('all',this)">◈ All</div>`;
+  data.sections.forEach(s => {
+    const c = document.createElement('div');
+    c.className = 'filter-chip';
+    c.dataset.filter = s.id;
+    c.onclick = function(){ filterSection(s.id, this); };
+    c.textContent = s.icon + ' ' + s.title;
+    bar.appendChild(c);
+  });
+
+  // Sections
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+  data.sections.forEach((section, i) => {
+    const el = document.createElement('div');
+    el.className = 'section';
+    el.id = 'section-' + section.id;
+    el.style.animationDelay = (i * 0.08) + 's';
+    const newCount = section.articles.filter(a => a.is_new).length;
+    el.innerHTML = `
+      <div class="section-header">
+        <div class="section-icon">${section.icon}</div>
+        <div class="section-title">${section.title}</div>
+        ${newCount > 0 ? `<span class="badge new">${newCount} new</span>` : ''}
+        <span class="section-count">${section.articles.length} item${section.articles.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="articles-grid">
+        ${section.articles.map(a => `
+          <a class="article-card" href="${a.url}" target="_blank" rel="noopener">
+            <div>
+              <div class="article-title">${a.title}</div>
+              <div class="article-meta">
+                <span class="article-source">${a.source}</span>
+                <span>${a.time || ''}</span>
+                ${a.is_new ? '<span class="badge new">new</span>' : ''}
+              </div>
+              ${a.summary ? `<div class="article-summary">${a.summary}</div>` : ''}
+            </div>
+            <div class="article-arrow">→</div>
+          </a>`).join('')}
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+function filterSection(filter, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => {
+    s.style.display = (filter === 'all' || s.id === 'section-' + filter) ? '' : 'none';
+  });
+}
+
+function setDot(state) {
+  const dot = document.getElementById('status-dot');
+  if (state === 'loading') { dot.style.background='#c8a96e'; dot.style.boxShadow='0 0 8px #c8a96e'; }
+  else { dot.style.background='var(--success)'; dot.style.boxShadow='0 0 8px var(--success)'; }
+}
+
+// ── Init ───────────────────────────────────────────
+loadSettings();
+loadDigest();
+</script>
+</body>
+</html>
